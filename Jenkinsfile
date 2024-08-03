@@ -15,10 +15,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop only the application running on port 8080
-                    def pid = bat(script: 'netstat -ano | findstr :8080 | findstr LISTENING | for /F "tokens=5" %a in (\'findstr LISTENING\') do @echo %a', returnStdout: true).trim()
+                    // Check if any process is using port 8080 and stop it
+                    def pid = bat(script: 'netstat -ano | findstr :8080 | findstr LISTENING', returnStdout: true).trim()
                     if (pid) {
-                        bat "taskkill /PID ${pid} /F || echo No process found on port 8080"
+                        // Extract the PID
+                        def pidArray = pid.split()
+                        def appPid = pidArray[-1] // PID is the last element in the array
+                        bat "taskkill /PID ${appPid} /F || echo No process found on port 8080"
                     } else {
                         echo 'No process found on port 8080'
                     }
