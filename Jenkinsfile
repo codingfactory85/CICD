@@ -1,11 +1,14 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven 3.8.5' // Ensure this matches the Maven installation name in Jenkins
+    }
+
     stages {
         stage('Build') {
             steps {
                 script {
-                    // Clean and build the project using Maven
                     bat 'mvn clean package'
                 }
             }
@@ -14,38 +17,19 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Run tests using Maven
                     bat 'mvn test'
                 }
             }
         }
 
-        stage('Blue Deployment') {
+        stage('Deploy') {
             steps {
                 script {
-                    // Deploy to the blue environment
-                    echo 'Deploying to Blue environment...'
-                    // Add your deployment script/command here
-                }
-            }
-        }
+                    // Stop any running instance of the application
+                    bat 'taskkill /F /IM java.exe'
 
-        stage('Test Deployment') {
-            steps {
-                script {
-                    // Run tests in the deployment environment
-                    echo 'Running tests in Blue environment...'
-                    // Add your testing script/command here
-                }
-            }
-        }
-
-        stage('Green Deployment') {
-            steps {
-                script {
-                    // Deploy to the green environment
-                    echo 'Deploying to Green environment...'
-                    // Add your deployment script/command here
+                    // Find and run the JAR file
+                    bat 'for /R %i in (*.jar) do java -jar %i'
                 }
             }
         }
@@ -53,7 +37,6 @@ pipeline {
 
     post {
         always {
-            // Archive the built artifacts
             archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
         }
     }
