@@ -19,7 +19,9 @@ pipeline {
                     def portCheck = bat(script: 'netstat -ano | findstr :8080 | findstr LISTENING', returnStatus: true)
                     if (portCheck == 0) {
                         // If the command succeeded, extract the PID and kill the process
-                        def pid = bat(script: 'for /F "tokens=5" %%i in (\'netstat -ano ^| findstr :8080 ^| findstr LISTENING\') do @echo %%i', returnStdout: true).trim()
+                        def pid = bat(script: '''
+                            for /F "tokens=5" %%i in ('netstat -ano ^| findstr :8080 ^| findstr LISTENING') do @echo %%i
+                        ''', returnStdout: true).trim()
                         if (pid) {
                             bat "taskkill /PID ${pid} /F || echo No process found on port 8080"
                         }
@@ -28,8 +30,10 @@ pipeline {
                     }
 
                     // Find the JAR file in the target directory
-                    def jarFile = bat(script: 'for %i in (target\\*.jar) do @echo %i', returnStdout: true).trim()
-                    jarFile = jarFile.readLines().find { it.endsWith(".jar") } // Ensure only the JAR file path is selected
+                    def jarFile = bat(script: '''
+                        for %i in (target\\*.jar) do @echo %i
+                    ''', returnStdout: true).trim()
+                    jarFile = jarFile.readLines().find { it.endsWith(".jar") }
                     if (jarFile) {
                         // Run the JAR file on port 8080
                         bat "start /b java -jar ${jarFile} --server.port=8080"
