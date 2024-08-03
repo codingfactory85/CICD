@@ -21,6 +21,7 @@ pipeline {
                 script {
                     // Run the Spring Boot application in the foreground for debugging
                     bat "java -jar \"%JAR_FILE%\" --server.port=8080"
+                    sleep time: 30, unit: 'SECONDS'
                 }
             }
         }
