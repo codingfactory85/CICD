@@ -1,32 +1,36 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "myapplication-image"
+        DOCKER_CONTAINER = "myapplication-container"
+    }
+
     stages {
         stage('Build') {
             steps {
                 script {
-                    // Clean and package the Spring Boot application
-                    bat 'mvn clean package'
+                    // Ensure no running processes or locks on the target directory
+                    bat 'taskkill /F /IM java.exe || echo No Java processes found'
+                    bat 'mvn clean install'
                 }
             }
         }
-        stage('Build Docker Image') {
+        stage('Docker Build') {
             steps {
                 script {
                     // Build the Docker image
-                    bat 'docker build -t myapplication-image .'
+                    bat 'docker build -t %DOCKER_IMAGE% .'
                 }
             }
         }
-        stage('Run Docker Container') {
+        stage('Docker Run') {
             steps {
                 script {
-                    // Stop any existing container running on port 8080
-                    bat 'docker ps -q -f "expose=8080" | ForEach-Object { docker stop $_ }'
-                    // Remove any existing container with the same name
-                    bat 'docker ps -a -q -f "name=myapplication-container" | ForEach-Object { docker rm $_ }'
+                    // Stop and remove any existing container with the same name
+                    bat 'powershell -Command "docker ps -a -q -f name=%DOCKER_CONTAINER% | ForEach-Object { docker rm -f $_ }"'
                     // Run the Docker container
-                    bat 'docker run -d --name myapplication-container -p 8080:8080 myapplication-image'
+                    bat 'docker run -d -p 8080:8080 --name %DOCKER_CONTAINER% %DOCKER_IMAGE%'
                 }
             }
         }
@@ -35,8 +39,8 @@ pipeline {
     post {
         always {
             script {
-                // Clean up any Docker containers
-                bat 'docker ps -a -q -f "name=myapplication-container" | ForEach-Object { docker rm -f $_ }'
+                // Stop and remove the Docker container after the build
+                bat 'powershell -Command "docker ps -a -q -f name=%DOCKER_CONTAINER% | ForEach-Object { docker rm -f $_ }"'
             }
         }
     }
