@@ -29,18 +29,20 @@ pipeline {
                         echo 'No process found on port 8080'
                     }
 
-                    // Find the JAR file in the target directory
-                    echo 'Looking for JAR files in target directory...'
-                    def jarFile = bat(script: 'for /F "delims=" %%i in (\'dir /B /A-D target\\*.jar\') do @echo %%i', returnStdout: true).trim()
-                    if (jarFile) {
-                        // Construct the correct absolute path to the JAR file
-                        echo "jarFilejarFile JAR file: ${jarFile}"
-                        def jarPath = "${env.WORKSPACE}\\target\\${jarFile}".replace('\\\\', '\\') // Fix double backslashes issue
-                        echo "Found JAR file: ${jarPath}"
-                        // Run the JAR file on port 8080
-                        bat "start /b java -jar \"${jarPath}\" --server.port=8080"
-                    } else {
-                        error 'No JAR file found in the target directory.'
+                    // Change to the target directory
+                    dir("${env.WORKSPACE}\\target") {
+                        echo 'Looking for JAR files in target directory...'
+                        def jarFile = bat(script: 'dir /B /A-D *.jar', returnStdout: true).trim()
+
+                        // Debug output to verify the jar file name
+                        echo "Jar file found: ${jarFile}"
+
+                        if (jarFile) {
+                            // Run the JAR file on port 8080
+                            bat "start /b java -jar \"${jarFile}\" --server.port=8080"
+                        } else {
+                            error 'No JAR file found in the target directory.'
+                        }
                     }
                 }
             }
