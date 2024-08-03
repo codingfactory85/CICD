@@ -35,7 +35,7 @@ pipeline {
                     if (jarFile) {
                         // Construct the correct absolute path to the JAR file
                         echo "jarFilejarFilejarFile JAR file: ${jarFile}"
-                        def jarPath = "${env.WORKSPACE}\\target\\${jarFile}".replace('\\\\', '\\') // Fix double backslashes issue
+                        def jarFile = bat(script: 'for /F "delims=" %%i in (\'dir /B /A-D target\\*.jar\') do @echo %%i', returnStdout: true).trim()
                         echo "Found JAR file: ${jarPath}"
                         // Run the JAR file on port 8080
                         bat "start /b java -jar \"${jarPath}\" --server.port=8080"
