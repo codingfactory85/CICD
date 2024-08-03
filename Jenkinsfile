@@ -33,11 +33,11 @@ pipeline {
                     echo 'Looking for JAR files in target directory...'
                     def jarFile = bat(script: 'for /F "delims=" %%i in (\'dir /B /A-D target\\*.jar\') do @echo %%i', returnStdout: true).trim()
                     if (jarFile) {
-                        // Fix path issue
-                        def jarPath = "target\\${jarFile}"
+                        // Use absolute path
+                        def jarPath = "${env.WORKSPACE}\\target\\${jarFile}"
                         echo "Found JAR file: ${jarPath}"
                         // Run the JAR file on port 8080
-                        bat "start /b java -jar ${jarPath} --server.port=8080"
+                        bat "start /b java -jar \"${jarPath}\" --server.port=8080"
                     } else {
                         error 'No JAR file found in the target directory.'
                     }
