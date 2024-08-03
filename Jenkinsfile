@@ -2,6 +2,41 @@ pipeline {
     agent any
 
     stages {
+        stage('Pre-Build Cleanup') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        #!/bin/bash
+                        echo "Stopping any existing application running on port 8080..."
+                        PID=$(lsof -t -i:8080)
+                        if [ ! -z "$PID" ]; then
+                            echo "Found PID: $PID"
+                            kill -9 $PID
+                        else
+                            echo "No application running on port 8080."
+                        fi
+                        '''
+                    } else {
+                        bat '''
+                        @echo off
+                        echo Stopping any existing application running on port 8080...
+                        for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8080"') do (
+                            set "pid=%%a"
+                            echo Found PID: !pid!
+                            tasklist /fi "pid eq !pid!" | findstr /i "java.exe" >nul && (
+                                echo Stopping PID: !pid!
+                                taskkill /F /PID !pid!
+                            ) || (
+                                echo No matching java.exe process found for PID: !pid!
+                            )
+                        )
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
@@ -33,15 +68,6 @@ pipeline {
                         // Linux and Mac (Unix-based systems) commands
                         sh '''
                         #!/bin/bash
-                        echo "Stopping any existing application running on port 8080..."
-                        PID=$(lsof -t -i:8080)
-                        if [ ! -z "$PID" ]; then
-                            echo "Found PID: $PID"
-                            kill -9 $PID
-                        else
-                            echo "No application running on port 8080."
-                        fi
-
                         echo "Starting new application..."
                         JAR_FILE=$(find target -name "*.jar" | head -n 1)
                         if [ ! -z "$JAR_FILE" ]; then
@@ -56,18 +82,6 @@ pipeline {
                         // Windows commands
                         bat '''
                         @echo off
-                        echo Stopping any existing application running on port 8080...
-                        for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8080"') do (
-                            set "pid=%%a"
-                            echo Found PID: !pid!
-                            tasklist /fi "pid eq !pid!" | findstr /i "java.exe" >nul && (
-                                echo Stopping PID: !pid!
-                                taskkill /F /PID !pid!
-                            ) || (
-                                echo No matching java.exe process found for PID: !pid!
-                            )
-                        )
-
                         echo Starting new application...
                         setlocal enabledelayedexpansion
                         set JAR_FILE=""
