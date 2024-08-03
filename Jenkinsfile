@@ -4,8 +4,11 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Run Maven build
-                bat 'mvn clean install'
+                script {
+                    // Ensure no running processes or locks on the target directory
+                    bat 'taskkill /F /IM java.exe || echo No Java processes found'
+                    bat 'mvn clean install'
+                }
             }
         }
         stage('Run') {
