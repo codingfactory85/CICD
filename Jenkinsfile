@@ -32,13 +32,14 @@ pipeline {
                     // Change to the target directory
                     dir("${env.WORKSPACE}\\target") {
                         echo 'Looking for JAR files in target directory...'
-                        def jarFile = bat(script: 'dir /B /A-D *.jar', returnStdout: true).trim()
+                        def jarFile = "${env.WORKSPACE}\\target\\cicd-0.0.1-SNAPSHOT.jar"
 
                         // Debug output to verify the jar file name
                         echo "Jar file found: ${jarFile}"
 
                         if (jarFile) {
                             // Run the JAR file on port 8080
+                            echo "Starting JAR file..."
                             bat "start /b java -jar \"${jarFile}\" --server.port=8080"
                         } else {
                             error 'No JAR file found in the target directory.'
