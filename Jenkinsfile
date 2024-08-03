@@ -31,7 +31,7 @@ pipeline {
 
                     // Find the JAR file in the target directory
                     echo 'Looking for JAR files in target directory...'
-                    def jarFile = bat(script: 'for %i in (target\\*.jar) do @echo %i', returnStdout: true).trim()
+                    def jarFile = bat(script: 'for /F "delims=" %%i in (\'dir /B /A-D target\\*.jar\') do @echo %%i', returnStdout: true).trim()
                     if (jarFile) {
                         echo "Found JAR file: ${jarFile}"
                         // Run the JAR file on port 8080
