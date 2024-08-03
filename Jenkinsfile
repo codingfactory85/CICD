@@ -32,7 +32,7 @@ pipeline {
                     // Change to the target directory
                     dir("${env.WORKSPACE}\\target") {
                         echo 'Looking for JAR files in target directory...'
-                        def jarFile = "${env.WORKSPACE}\\target\\cicd-0.0.1-SNAPSHOT.jar"
+                        def jarFile = "cicd-0.0.1-SNAPSHOT.jar"
 
                         // Debug output to verify the jar file name
                         echo "Jar file found: ${jarFile}"
