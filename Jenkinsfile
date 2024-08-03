@@ -5,7 +5,11 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'mvn clean package' // Using 'sh' for compatibility with Unix systems
+                    if (isUnix()) {
+                        sh 'mvn clean package'
+                    } else {
+                        bat 'mvn clean package'
+                    }
                 }
             }
         }
@@ -13,7 +17,11 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    sh 'mvn test' // Using 'sh' for compatibility with Unix systems
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
                 }
             }
         }
@@ -21,10 +29,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    def os = sh(returnStdout: true, script: 'uname').trim()
-
-                    if (os == 'Linux' || os == 'Darwin') {
-                        // Linux and Mac (Darwin) commands
+                    if (isUnix()) {
+                        // Linux and Mac (Unix-based systems) commands
                         sh '''
                         #!/bin/bash
                         echo "Stopping any existing application running on port 8080..."
@@ -46,7 +52,7 @@ pipeline {
                             exit 1
                         fi
                         '''
-                    } else if (os =~ /CYGWIN|MINGW|MSYS|Windows_NT/) {
+                    } else {
                         // Windows commands
                         bat '''
                         @echo off
@@ -76,8 +82,6 @@ pipeline {
                             exit /b 1
                         )
                         '''
-                    } else {
-                        error "Unsupported operating system: ${os}"
                     }
                 }
             }
