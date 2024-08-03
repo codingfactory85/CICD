@@ -12,21 +12,28 @@ pipeline {
             steps {
                 script {
                     // Check if port 8080 is in use
+                    echo 'Checking for processes on port 8080...'
                     def portCheck = bat(script: 'netstat -ano | findstr :8080', returnStatus: true)
                     if (portCheck == 0) {
+                        echo 'Port 8080 is in use. Finding PID...'
                         // Extract PID of the process using port 8080
-                        def pid = bat(script: 'for /F "tokens=5" %i in (\'netstat -ano ^| findstr :8080 ^| findstr LISTENING\') do @echo %i', returnStdout: true).trim()
+                        def pid = bat(script: 'for /F "tokens=5" %%i in (\'netstat -ano ^| findstr :8080 ^| findstr LISTENING\') do @echo %%i', returnStdout: true).trim()
                         if (pid) {
+                            echo "Stopping process with PID ${pid}."
                             // Stop the process using the PID
                             bat "taskkill /PID ${pid} /F"
+                        } else {
+                            echo 'No PID found for port 8080.'
                         }
                     } else {
                         echo 'No process found on port 8080'
                     }
 
                     // Find the JAR file in the target directory
+                    echo 'Looking for JAR files in target directory...'
                     def jarFile = bat(script: 'for %i in (target\\*.jar) do @echo %i', returnStdout: true).trim()
                     if (jarFile) {
+                        echo "Found JAR file: ${jarFile}"
                         // Run the JAR file on port 8080
                         bat "start /b java -jar ${jarFile} --server.port=8080"
                     } else {
