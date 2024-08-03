@@ -1,55 +1,26 @@
 pipeline {
     agent any
 
+    environment {
+        JAR_FILE = 'C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\TestCICD\\target\\cicd-0.0.1-SNAPSHOT.jar'
+    }
+
     stages {
-        stage('Prepare') {
+        stage('Build') {
             steps {
                 script {
-                    // Check if port 8080 is in use
-                    echo 'Checking for processes on port 8080...'
-                    def portCheck = bat(script: 'netstat -ano | findstr :8080', returnStatus: true)
-                    if (portCheck == 0) {
-                        echo 'Port 8080 is in use. Finding PID...'
-                        // Extract PID of the process using port 8080
-                        def pid = bat(script: 'for /F "tokens=5" %i in (\'netstat -ano ^| findstr :8080 ^| findstr LISTENING\') do @echo %i', returnStdout: true).trim()
-                        if (pid) {
-                            echo "Stopping process with PID ${pid}."
-                            // Stop the process using the PID
-                            bat "taskkill /PID ${pid} /F"
-                        } else {
-                            echo 'No PID found for port 8080.'
-                        }
-                    } else {
-                        echo 'No process found on port 8080.'
-                    }
+                    // Stop any running Java processes
+                    //bat 'taskkill /F /IM java.exe || echo No Java processes found'
+                    // Build the project with Maven
+                    bat 'mvn clean install'
                 }
             }
         }
-        stage('Build') {
-            steps {
-                // Run Maven build
-                bat 'mvn clean install'
-            }
-        }
-        stage('Deploy') {
+        stage('Run') {
             steps {
                 script {
-                    // Change to the target directory
-                    dir("${env.WORKSPACE}\\target") {
-                        echo 'Looking for JAR files in target directory...'
-                        def jarFile = "cicd-0.0.1-SNAPSHOT.jar"
-
-                        // Debug output to verify the jar file name
-                        echo "Jar file found: ${jarFile}"
-
-                        if (jarFile) {
-                            // Run the JAR file on port 8080
-                            echo "Starting JAR file..."
-                            bat "start /B java -jar \"${jarFile}\" "
-                        } else {
-                            error 'No JAR file found in the target directory.'
-                        }
-                    }
+                    // Run the Spring Boot application in the foreground for debugging
+                    bat "java -jar \"%JAR_FILE%\" --server.port=8080"
                 }
             }
         }
