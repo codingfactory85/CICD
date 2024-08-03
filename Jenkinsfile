@@ -5,6 +5,13 @@ pipeline {
         stage('Build') {
             steps {
                 // Run Maven build
+                bat 'mvn clean install'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    // Check if port 8080 is in use
                     echo 'Checking for processes on port 8080...'
                     def portCheck = bat(script: 'netstat -ano | findstr :8080', returnStatus: true)
                     if (portCheck == 0) {
@@ -21,14 +28,6 @@ pipeline {
                     } else {
                         echo 'No process found on port 8080'
                     }
-                bat 'mvn clean install'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    // Check if port 8080 is in use
-
 
                     // Change to the target directory
                     dir("${env.WORKSPACE}\\target") {
