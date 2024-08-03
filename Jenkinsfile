@@ -19,10 +19,12 @@ pipeline {
         stage('Run') {
             steps {
                 script {
-                    // Run the Spring Boot application in the foreground for debugging
-                    bat "java -jar \"%JAR_FILE%\" --server.port=8080"
-                    sleep time: 30, unit: 'SECONDS'
-                }
+                                    // Run the Spring Boot application in the background using PowerShell
+                                    powershell """
+                                        Start-Process -FilePath 'java' -ArgumentList '-jar \"${env.JAR_FILE}\" --server.port=8080' -NoNewWindow
+                                        Start-Sleep -Seconds 30
+                                    """
+                                }
             }
         }
     }
