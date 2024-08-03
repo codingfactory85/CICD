@@ -16,9 +16,11 @@ pipeline {
             steps {
                 script {
                     // Stop only the application running on port 8080
-                    def pid = bat(script: 'netstat -ano | findstr :8080 | for /F "tokens=5" %a in (\'findstr LISTENING\') do @echo %a', returnStdout: true).trim()
+                    def pid = bat(script: 'netstat -ano | findstr :8080 | findstr LISTENING | for /F "tokens=5" %a in (\'findstr LISTENING\') do @echo %a', returnStdout: true).trim()
                     if (pid) {
-                        bat "taskkill /PID ${pid} /F"
+                        bat "taskkill /PID ${pid} /F || echo No process found on port 8080"
+                    } else {
+                        echo 'No process found on port 8080'
                     }
 
                     // Find the JAR file in the target directory and run it
