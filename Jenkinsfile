@@ -45,7 +45,7 @@ pipeline {
                         if (jarFile) {
                             // Run the JAR file on port 8080
                             echo "Starting JAR file..."
-                            bat "start /B java -jar \"%JAR_FILE%\" --server.port=8080"
+                            bat "start /B java -jar \"%JAR_FILE%\" "
                         } else {
                             error 'No JAR file found in the target directory.'
                         }
