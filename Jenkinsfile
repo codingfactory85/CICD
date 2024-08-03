@@ -17,7 +17,10 @@ pipeline {
         stage('Run') {
             steps {
                 script {
-                    bat 'cd C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\TestCICD\\target && start java -jar cicd-0.0.1-SNAPSHOT.jar'
+                    // Start the new instance of the application using PowerShell
+                                        powershell """
+                                            Start-Process -FilePath 'java' -ArgumentList '-jar C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\TestCICD\\target\\cicd-0.0.1-SNAPSHOT.jar' -NoNewWindow -PassThru
+                                        """
                 }
             }
         }
