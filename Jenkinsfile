@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven 3.8.5' // Ensure this matches the Maven installation name in Jenkins
-    }
+  //  tools {
+  //      maven 'Maven 3.8.5' // Ensure this matches the Maven installation name in Jenkins
+  //  }
 
     stages {
         stage('Build') {
