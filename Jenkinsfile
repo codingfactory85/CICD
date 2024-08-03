@@ -2,19 +2,22 @@ pipeline {
     agent any
 
     stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from Git repository
+                git 'https://your-repository-url.git'
+            }
+        }
         stage('Build') {
             steps {
-                script {
-                    // Ensure no running processes or locks on the target directory
-                    bat 'taskkill /F /IM java.exe || echo No Java processes found'
-                    bat 'mvn clean install'
-                }
+                // Run Maven build
+                sh 'mvn clean install'
             }
         }
         stage('Run') {
             steps {
                 // Run Spring Boot application
-                bat 'mvn spring-boot:run'
+                sh 'mvn spring-boot:run'
             }
         }
     }
