@@ -11,7 +11,16 @@ pipeline {
         stage('Stop Old Application') {
             steps {
                 // Stop existing Spring Boot application running on port 8080
-                bat 'FOR /F "tokens=5" %%i IN (\'netstat -aon ^| findstr :8080\') DO taskkill /PID %%i /F || echo No application running on port 8080'
+               def portCheck = bat(script: 'netstat -ano | findstr :8080 | findstr LISTENING', returnStatus: true)
+               if (portCheck == 0) {
+               // If the command succeeded, extract the PID and kill the process
+               def pid = bat(script: 'for /F "tokens=5" %i in (\'netstat -ano ^| findstr :8080 ^| findstr LISTENING\') do @echo %i', returnStdout: true).trim()
+               if (pid) {
+                    bat "taskkill /PID ${pid} /F || echo No process found on port 8080"
+                        }
+               } else {
+                   echo 'No process found on port 8080'
+                }
             }
         }
         stage('Run') {
