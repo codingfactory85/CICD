@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-  //  tools {
-  //      maven 'Maven 3.8.5' // Ensure this matches the Maven installation name in Jenkins
-  //  }
+    tools {
+        maven 'Maven 3.9.8' // Ensure this matches the Maven installation name in Jenkins
+    }
 
     stages {
         stage('Build') {
@@ -25,11 +25,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop any running instance of the application
-                    bat 'taskkill /F /IM java.exe'
+                    // Stop the existing application
+                    bat 'stop_application.bat'
 
-                    // Find and run the JAR file
-                    bat 'for /R %i in (*.jar) do java -jar %i'
+                    // Start the new application
+                    bat 'for /R %i in (target\\*.jar) do java -jar %i'
                 }
             }
         }
