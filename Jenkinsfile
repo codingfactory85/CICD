@@ -16,12 +16,13 @@ pipeline {
             steps {
                 script {
                     // Check if any process is using port 8080 and stop it
-                    def pid = bat(script: 'netstat -ano | findstr :8080 | findstr LISTENING', returnStdout: true).trim()
-                    if (pid) {
+                    def portCheck = bat(script: 'netstat -ano | findstr :8080', returnStdout: true).trim()
+                    if (portCheck) {
                         // Extract the PID
-                        def pidArray = pid.split()
-                        def appPid = pidArray[-1] // PID is the last element in the array
-                        bat "taskkill /PID ${appPid} /F || echo No process found on port 8080"
+                        def pid = portCheck.split().findAll { it.isInteger() }[-1]
+                        if (pid) {
+                            bat "taskkill /PID ${pid} /F || echo No process found on port 8080"
+                        }
                     } else {
                         echo 'No process found on port 8080'
                     }
