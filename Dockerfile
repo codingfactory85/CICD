@@ -1,5 +1,5 @@
-# Use an OpenJDK base image
-FROM openjdk:17-jdk
+# Use a Debian-based OpenJDK base image
+FROM openjdk:17-jdk-slim
 
 # Install dependencies
 RUN apt-get update && \
@@ -13,7 +13,7 @@ RUN wget https://archive.apache.org/dist/maven/maven-3/3.9.8/binaries/apache-mav
     rm apache-maven-3.9.8-bin.tar.gz
 
 # Set Maven home environment variable
-ENV MAVEN_HOME /opt/maven
+ENV MAVEN_HOME=/opt/maven
 
 # Set the working directory
 WORKDIR /app
