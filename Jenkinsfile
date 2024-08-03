@@ -9,8 +9,6 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Stop any running Java processes
-                    //bat 'taskkill /F /IM java.exe || echo No Java processes found'
                     // Build the project with Maven
                     bat 'mvn clean install'
                 }
@@ -19,12 +17,17 @@ pipeline {
         stage('Run') {
             steps {
                 script {
-                                    // Run the Spring Boot application in the background using PowerShell
-                                    powershell """
-                                        Start-Process -FilePath 'java' -ArgumentList '-jar \"${env.JAR_FILE}\" --server.port=8080' -NoNewWindow
-                                        Start-Sleep -Seconds 30
-                                    """
-                                }
+                    // Stop any running instance of the application on port 8080
+                    bat """
+                        FOR /F "tokens=5" %a in ('netstat -ano ^| findstr :8080') do (
+                            FOR /F "tokens=1" %b in ('tasklist /FI "PID eq %a" ^| findstr java.exe') do (
+                                taskkill /F /PID %a
+                            )
+                        )
+                    """
+                    // Start the new instance of the application
+                    bat 'cd C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\TestCICD\\target && java -jar cicd-0.0.1-SNAPSHOT.jar'
+                }
             }
         }
     }
