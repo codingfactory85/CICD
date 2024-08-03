@@ -2,13 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
-            steps {
-                // Run Maven build
-                bat 'mvn clean install'
-            }
-        }
-        stage('Deploy') {
+        stage('Prepare') {
             steps {
                 script {
                     // Check if port 8080 is in use
@@ -26,9 +20,20 @@ pipeline {
                             echo 'No PID found for port 8080.'
                         }
                     } else {
-                        echo 'No process found on port 8080'
+                        echo 'No process found on port 8080.'
                     }
-
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                // Run Maven build
+                bat 'mvn clean install'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
                     // Change to the target directory
                     dir("${env.WORKSPACE}\\target") {
                         echo 'Looking for JAR files in target directory...'
