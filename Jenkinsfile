@@ -15,9 +15,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop any previously running instances of the Spring Boot application
-                    bat 'netstat -ano | findstr :8080'
-                    def pid = bat(script: 'for /f "tokens=5" %a in (\'netstat -ano ^| findstr :8080\') do @echo %a', returnStdout: true).trim()
+                    // Stop only the application running on port 8080
+                    def pid = bat(script: 'netstat -ano | findstr :8080 | for /F "tokens=5" %a in (\'findstr LISTENING\') do @echo %a', returnStdout: true).trim()
                     if (pid) {
                         bat "taskkill /PID ${pid} /F"
                     }
