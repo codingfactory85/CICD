@@ -31,6 +31,7 @@ pipeline {
 
                     // Start the new application
                     bat '''
+                    setlocal enabledelayedexpansion
                     set JAR_FILE=""
                     for /R %%i in (target\\*.jar) do (
                         set JAR_FILE=%%i
