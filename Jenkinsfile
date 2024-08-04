@@ -4,14 +4,23 @@ pipeline {
     environment {
         DOCKER_IMAGE = "myapplication-image"
         DOCKER_CONTAINER = "myapplication-container"
+        SPRINGBOOT_PORT = 8080
     }
 
     stages {
         stage('Build') {
             steps {
                 script {
-                    // Ensure no running processes or locks on the target directory
-                    bat 'taskkill /F /IM java.exe || echo No Java processes found'
+                    // Stop the Java process running on the specified port
+                    bat """
+                    powershell -Command \"
+                    \$port = ${SPRINGBOOT_PORT}
+                    \$process = Get-NetTCPConnection -LocalPort \$port | Select-Object -ExpandProperty OwningProcess
+                    if (\$process) {
+                        Stop-Process -Id \$process -Force
+                    }
+                    \"
+                    """
                     bat 'mvn clean install'
                 }
             }
